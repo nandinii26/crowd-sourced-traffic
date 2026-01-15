@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Crowd Traffic API
+  version: 0.1.0
+servers:
+  - url: https://api.example.com
+paths:
+  /ingest:
+    post:
+      summary: Ingest anonymized location & speed event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                anonymized_id:
+                  type: string
+                lat:
+                  type: number
+                lon:
+                  type: number
+                speed:
+                  type: number
+                heading:
+                  type: number
+                recorded_at:
+                  type: string
+                  format: date-time
+      responses:
+        '202':
+          description: Accepted
+
+  /traffic/segments:
+    get:
+      summary: Query aggregated traffic for segments
+      parameters:
+        - in: query
+          name: bbox
+          schema:
+            type: string
+          description: Bounding box as minLon,minLat,maxLon,maxLat
+      responses:
+        '200':
+          description: OK
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

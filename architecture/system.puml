@@ -1,0 +1,30 @@
+@startuml
+title Crowd-Sourced Traffic System Architecture
+
+actor MobileUser
+node "Android App (Kotlin)" as Mobile
+node "API Gateway (HTTPS)" as APIGW
+node "Backend (Node.js + TS)" as Backend
+database "PostgreSQL + PostGIS" as Postgres
+queue "Apache Kafka" as Kafka
+node "Prediction (TensorFlow.js)" as Predict
+component "Redis (cache)" as Redis
+cloud "Map Provider (Google/Mapbox)" as Maps
+
+Mobile --> APIGW : POST /ingest (location, speed)
+APIGW --> Kafka : publish raw events
+Backend --> Kafka : consume events
+Backend --> Postgres : store aggregated segments
+Backend --> Redis : update live state
+Backend --> Predict : request congestion predictions
+Backend --> Maps : route optimization / tiles
+Mobile <.. Backend : WebSocket live updates
+
+note right of Backend
+ - REST APIs (ingest, query)
+ - WebSocket for real-time pushes
+ - Kafka consumers
+ - Prediction orchestration
+end note
+
+@enduml

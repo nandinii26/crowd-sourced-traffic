@@ -1,0 +1,19 @@
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+
+android {
+    compileSdk 33
+    defaultConfig {
+        applicationId "com.crowdtraffic.app"
+        minSdk 26
+        targetSdk 33
+        versionCode 1
+        versionName "0.1"
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.7.20"
+}

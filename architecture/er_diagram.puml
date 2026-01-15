@@ -1,0 +1,43 @@
+@startuml
+title ER Diagram (Traffic Events)
+
+entity users {
+  * user_id : uuid
+  --
+  anonymized_id : uuid
+  consented : boolean
+}
+
+entity raw_events {
+  * event_id : uuid
+  --
+  anonymized_id : uuid
+  lat : numeric
+  lon : numeric
+  speed : numeric
+  heading : numeric
+  recorded_at : timestamptz
+}
+
+entity road_segments {
+  * segment_id : uuid
+  --
+  geom : geometry(LineString, 4326)
+  length_m : numeric
+}
+
+entity aggregated_segment_state {
+  * state_id : uuid
+  --
+  segment_id : uuid
+  avg_speed : numeric
+  sample_count : integer
+  density_level : varchar
+  updated_at : timestamptz
+}
+
+users ||--o{ raw_events : "generates"
+road_segments ||--o{ aggregated_segment_state : "represents"
+raw_events }o--|| road_segments : "mapped_to"
+
+@enduml
