@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
@@ -19,7 +20,16 @@ async function main() {
   });
 
   await initDb();
-  await initKafka();
+  
+  // Kafka initialization disabled - not running
+  // try {
+  //   await Promise.race([
+  //     initKafka(),
+  //     new Promise((_, reject) => setTimeout(() => reject(new Error('Kafka timeout')), 5000))
+  //   ]);
+  // } catch (err) {
+  //   console.warn('Kafka initialization failed (continuing without Kafka):', err instanceof Error ? err.message : err);
+  // }
 
   const port = process.env.PORT || 3000;
   server.listen(port, () => console.log(`Server listening on ${port}`));

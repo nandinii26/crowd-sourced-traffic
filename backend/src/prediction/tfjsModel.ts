@@ -1,4 +1,5 @@
-import * as tf from '@tensorflow/tfjs-node';
+// import * as tf from '@tensorflow/tfjs-node';
+// Note: TensorFlow dependency removed - using heuristic model instead
 
 // Placeholder: build/load a TF.js model to predict density and ETA per segment
 export async function predictSegment(features: number[]) {

@@ -1,24 +1,23 @@
-import { Kafka } from 'kafkajs';
-
-type KafkaMessage = {
-  key?: string | Buffer | null;
-  value?: string | Buffer | null;
-  headers?: { [key: string]: unknown } | undefined;
-};
+import { Kafka, Message, Producer } from 'kafkajs';
 
 const kafka = new Kafka({ clientId: 'crowd-traffic-backend', brokers: [process.env.KAFKA_BROKER || 'localhost:9092'] });
-export const kafkaProducer = kafka.producer();
+export const kafkaProducer: Producer = kafka.producer();
 
 let _connected = false;
 
-export async function initKafka() {
+export async function initKafka(): Promise<void> {
   if (_connected) return;
-  await kafkaProducer.connect();
-  _connected = true;
-  console.log('Kafka producer connected');
+  try {
+    await kafkaProducer.connect();
+    _connected = true;
+    console.log('Kafka producer connected');
+  } catch (err) {
+    console.warn('Kafka producer connection failed:', err instanceof Error ? err.message : err);
+    throw err;
+  }
 }
 
-export async function sendMessage(topic: string, messages: KafkaMessage[]) {
+export async function sendMessage(topic: string, messages: Message[]) {
   if (!_connected) {
     try {
       await kafkaProducer.connect();

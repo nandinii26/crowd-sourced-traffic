@@ -11,16 +11,27 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import android.os.Handler
 import android.os.Looper
+import com.squareup.okhttp3.OkHttpClient
+import com.squareup.okhttp3.Request
+import com.squareup.okhttp3.RequestBody.Companion.toRequestBody
+import com.squareup.okhttp3.MediaType.Companion.toMediaType
+import org.json.JSONObject
+import java.util.UUID
 
 class LocationService : Service() {
     private val CHANNEL_ID = "crowd_traffic_fg"
     private val handler = Handler(Looper.getMainLooper())
+    private val httpClient = OkHttpClient()
+    
+    // Backend URL - Change based on your setup:
+    // For emulator: http://10.0.2.2:3000
+    // For physical device: http://172.30.224.1:3000
+    private val BACKEND_URL = "http://10.0.2.2:3000/ingest"
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         startForeground(1, buildNotification())
-        // In production: use FusedLocationProviderClient with optimized intervals
         handler.post(sampleRunnable)
     }
 
@@ -32,10 +43,37 @@ class LocationService : Service() {
                 longitude = -122.4194
                 speed = 5.0f
             }
-            // Build anonymized payload and POST to backend `/ingest`
-            // Use optimized batching and significant-movement heuristics to save battery
+            sendLocationToBackend(fakeLocation)
+            handler.postDelayed(this, 30_000) // sample every 30s
+        }
+    }
 
-            handler.postDelayed(this, 30_000) // sample every 30s (example)
+    private fun sendLocationToBackend(location: Location) {
+        val payload = JSONObject().apply {
+            put("anonymized_id", UUID.randomUUID().toString())
+            put("latitude", location.latitude)
+            put("longitude", location.longitude)
+            put("speed", location.speed)
+            put("heading", location.bearing)
+            put("timestamp", System.currentTimeMillis())
+        }
+
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val request = Request.Builder()
+            .url(BACKEND_URL)
+            .post(payload.toString().toRequestBody(mediaType))
+            .build()
+
+        try {
+            httpClient.newCall(request).execute().use { response ->
+                if (response.isSuccessful) {
+                    android.util.Log.d("LocationService", "Data sent successfully")
+                } else {
+                    android.util.Log.e("LocationService", "Failed: ${response.code}")
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("LocationService", "Error sending data: ${e.message}")
         }
     }
 

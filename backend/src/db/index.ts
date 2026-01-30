@@ -5,6 +5,10 @@ export const pool = new Pool({
 });
 
 export async function initDb() {
-  await pool.connect();
-  console.log('Postgres connected');
+  try {
+    await pool.connect();
+    console.log('Postgres connected');
+  } catch (err) {
+    console.warn('Postgres connection failed (continuing without DB):', err instanceof Error ? err.message : err);
+  }
 }
